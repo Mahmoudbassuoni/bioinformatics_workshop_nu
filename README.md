@@ -1,7 +1,7 @@
 # bioinformatics_workshop_nu
 A bioinformatics tutorial on alignment and variant calling and how to extract the Operational Taxonimc Units (OTU) out of Bacterial Fastq files.
 # NGS alignment and variant calling
-## Part.1 
+## Part.0 
 **All tools needed was downloaded and installed on a docker image for anyone to be able to reproduce the same data without errors**
 ### Download Docker
 #### 1. Update the apt package index and install packages to allow apt to use a repository over HTTPS:
