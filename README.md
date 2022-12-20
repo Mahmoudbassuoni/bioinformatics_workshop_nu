@@ -1,7 +1,7 @@
 # Bioinformatics_Workshop_NU
 A bioinformatics tutorial on alignment and variant calling and how to extract the Operational Taxonimc Units (OTU) out of Bacterial Fastq files.
 # NGS alignment and variant calling
-## Part.1 Docker Installation and Image start
+## Part [1]: Docker Installation and Image start
 **All tools needed was downloaded and installed on a docker image for anyone to be able to reproduce the same data without errors**
 ### 1.1 Download Docker
 #### 1. Update the apt package index and install packages to allow apt to use a repository over HTTPS:
@@ -31,7 +31,7 @@ $ sudo apt-get update
 ```
 #### 2.Install Docker Engine, containerd, and Docker Compose. 
 ```
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-composE. Coli K12 is a common laboratory strain that has lost its ability to live in the human intestine, but is ideal for manipulation in a controlled setting. The genome is relatively short, and so it's a good place to start learning about alignment and variant calling.e-plugin
 ```
 #### 3.Verify that the Docker Engine installation is successful by running the hello-world image:
 ```
@@ -45,3 +45,9 @@ $ sudo docker pull mahmoudbassyouni/bioinformatics_workshop_nu:v2
 ```
 $ sudo docker run -it -v $HOME:$HOME mahmoudbassyouni/bioinformatics_workshop_nu:v2
 ```
+## Part [2]: Aligning E. Coli data with bwa mem
+[E. Coli K12](https://en.wikipedia.org/wiki/Escherichia_coli#Model_organism) is a common laboratory strain that has lost its ability to live in the human intestine, but is ideal for manipulation in a controlled setting. The genome is relatively short, and so it's a good place to start learning about alignment and variant calling. 
+### 2.1 E. Coli K12 reference
+We'll get some test data to play with. First, [the E. Coli K12 reference](http://www.ncbi.nlm.nih.gov/nuccore/556503834), from NCBI. It's a bit of a pain to pull out of the web interface so [you can also download it here](http://hypervolu.me/~erik/genomes/E.coli_K12_MG1655.fa).
+
+
