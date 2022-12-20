@@ -147,3 +147,21 @@ Breaking it down by line:
 * conversion to BAM: `samtools view -b -` --- this reads SAM from stdin (the `-` specifier in place of the file name indicates this) and converts to BAM.
 * sorting the BAM file: `sambamba sort SRR1770413.raw.bam` --- sort the BAM file, writing it to `.sorted.bam`.
 * marking PCR duplicates: `sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.bam` --- this marks reads which appear to be redundant PCR duplicates based on their read mapping position. It [uses the same criteria for marking duplicates as picard](http://lomereiter.github.io/sambamba/docs/sambamba-markdup.html).
+
+Now, run the same alignment process for the O104:H4 strain's data. Make sure to specify a different sample name via the `-R '@RG...` flag incantation to specify the identity of the data in the BAM file header and in the alignment records themselves:
+
+```
+$ bwa mem -t $threads -R '@RG\tID:O104_H4\tSM:O104_H4' \
+    ../ref/E.coli_K12_MG1655.fa ../O104/SRR341549_1.fastq.gz  ../O104/SRR341549_2.fastq.gz \
+    | samtools view -b - >SRR341549.raw.bam
+$ sambamba sort SRR341549.raw.bam
+$ sambamba markdup SRR341549.raw.sorted.bam SRR341549.bam
+```
+As a standard post-processing step, it's helpful to add a BAM index to the files. This let's us jump around in them quickly using BAM compatible tools that can read the index. sambamba does this for us by default, but if it hadn't or we had used a different process to generate the BAM files, we could use samtools to achieve exactly the same index.
+```
+$ samtools index SRR1770413.bam && samtools index SRR341549.bam
+```
+## Part [3]: Variant Calling 
+Now that we have our alignments sorted, we can quickly determine variation against the reference by scanning through them using a variant caller. There are many options, including [samtools mpileup](http://samtools.sourceforge.net/samtools.shtml), [platypus](https://www.well.ox.ac.uk/research/research-groups/lunter-group/lunter-group/platypus-documentation), and the [GATK](https://gatk.broadinstitute.org/hc/en-us).
+
+For this tutorial, we'll keep things simple and use [freebayes](https://github.com/freebayes/freebayes). It has a number of advantages in this context (bacterial genomes), such as long-term support for haploid (and polyploid) genomes. However, the best reason to use it is that it's very easy to set up and run, and it produces a very well-annotated VCF output that is suitable for immediate downstream filtering.
