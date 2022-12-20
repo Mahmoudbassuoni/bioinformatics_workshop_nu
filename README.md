@@ -134,4 +134,16 @@ You can now run the alignment using a piped approach. Replace `$threads` with th
 #To check your cpus you can use this command:
 $ htop
 $ cd ../alignment
+$ bwa mem -t $threads -R '@RG\tID:K12\tSM:K12' \
+    ../ref/E.coli_K12_MG1655.fa ../K12/SRR1770413_1.fastq.gz ../K12/SRR1770413_2.fastq.gz \
+    | samtools view -b - >SRR1770413.raw.bam
+$ sambamba sort SRR1770413.raw.bam
+$ sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.ba
 ```
+Breaking it down by line:
+
+* alignment with bwa: `bwa mem -t $threads -R '@RG\tID:K12\tSM:K12'` --- this says "align using so many threads" and also "give the reads the read group K12 and the sample name K12"
+* reference and FASTQs `E.coli_K12_MG1655.fa SRR1770413_1.fastq.gz SRR1770413_2.fastq.gz` --- this just specifies the base reference file name (`bwa` finds the indexes using this) and the input alignment files. The first file should contain the first mate, the second file the second mate.
+* conversion to BAM: `samtools view -b -` --- this reads SAM from stdin (the `-` specifier in place of the file name indicates this) and converts to BAM.
+* sorting the BAM file: `sambamba sort SRR1770413.raw.bam` --- sort the BAM file, writing it to `.sorted.bam`.
+* marking PCR duplicates: `sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.bam` --- this marks reads which appear to be redundant PCR duplicates based on their read mapping position. It [uses the same criteria for marking duplicates as picard](http://lomereiter.github.io/sambamba/docs/sambamba-markdup.html).
