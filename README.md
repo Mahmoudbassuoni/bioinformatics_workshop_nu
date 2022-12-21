@@ -31,7 +31,7 @@ $ sudo apt-get update
 ```
 #### 2.Install Docker Engine, containerd, and Docker Compose. 
 ```
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-composE. Coli K12 is a common laboratory strain that has lost its ability to live in the human intestine, but is ideal for manipulation in a controlled setting. The genome is relatively short, and so it's a good place to start learning about alignment and variant calling.e-plugin
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 ```
 #### 3.Verify that the Docker Engine installation is successful by running the hello-world image:
 ```
