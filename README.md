@@ -165,3 +165,6 @@ $ samtools index SRR1770413.bam && samtools index SRR341549.bam
 Now that we have our alignments sorted, we can quickly determine variation against the reference by scanning through them using a variant caller. There are many options, including [samtools mpileup](http://samtools.sourceforge.net/samtools.shtml), [platypus](https://www.well.ox.ac.uk/research/research-groups/lunter-group/lunter-group/platypus-documentation), and the [GATK](https://gatk.broadinstitute.org/hc/en-us).
 
 For this tutorial, we'll keep things simple and use [freebayes](https://github.com/freebayes/freebayes). It has a number of advantages in this context (bacterial genomes), such as long-term support for haploid (and polyploid) genomes. However, the best reason to use it is that it's very easy to set up and run, and it produces a very well-annotated VCF output that is suitable for immediate downstream filtering.
+
+### Variant calls with freebayes
+
