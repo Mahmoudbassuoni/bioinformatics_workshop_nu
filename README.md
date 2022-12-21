@@ -6,8 +6,8 @@ A bioinformatics tutorial on alignment and variant calling. This Tutorial was co
 ### 1.1 Download Docker
 #### 1. Update the apt package index and install packages to allow apt to use a repository over HTTPS:
 ```
-$ sudo apt-get update
-$ sudo apt-get install \
+sudo apt-get update && \
+sudo apt-get install \
     ca-certificates \
     curl \
     gnupg \
@@ -15,44 +15,46 @@ $ sudo apt-get install \
 ```    
 #### 2.Add Docker’s official GPG key:
 ```
-$ sudo mkdir -p /etc/apt/keyrings
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo mkdir -p /etc/apt/keyrings && \
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 ```
 #### 3.Use the following command to set up the repository:
 ```
-$ echo \
+echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 ### 1.2 Install Docker Engine
 #### 1.Update the apt package index:
 ```
-$ sudo apt-get update
+sudo apt-get update
 ```
 #### 2.Install Docker Engine, containerd, and Docker Compose. 
 ```
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 ```
 #### 3.Verify that the Docker Engine installation is successful by running the hello-world image:
 ```
-$ sudo docker run hello-world
+sudo docker run hello-world
 ```
 ### 1.3 Install our tutorial docker image
 ```
-$ sudo docker pull mahmoudbassyouni/bioinformatics_workshop_nu:v2
+sudo docker pull mahmoudbassyouni/bioinformatics_workshop_nu:v2
 ```
 ### 1.4 Run the docker image
 ```
-$ sudo docker run -it -v $HOME:$HOME mahmoudbassyouni/bioinformatics_workshop_nu:v2
+sudo docker run -it -v $HOME:$HOME mahmoudbassyouni/bioinformatics_workshop_nu:v2
 ```
 ## Part [2]: Aligning E. Coli data with bwa mem
 [E. Coli K12](https://en.wikipedia.org/wiki/Escherichia_coli#Model_organism) is a common laboratory strain that has lost its ability to live in the human intestine, but is ideal for manipulation in a controlled setting. The genome is relatively short, and so it's a good place to start learning about alignment and variant calling. 
 ### 2.1 E. Coli K12 reference
 We'll get some test data to play with. First, [the E. Coli K12 reference](http://www.ncbi.nlm.nih.gov/nuccore/556503834), from NCBI. It's a bit of a pain to pull out of the web interface so [you can also download it here](http://hypervolu.me/~erik/genomes/E.coli_K12_MG1655.fa). First let's create our directories to organize our files and then check our referrence genome. 
 ```
-$ mkdir workshop workshop/ref workshop/K12 workshop/O104 workshop/alignment workshop/variant_calling && cd workshop/ref
+mkdir workshop workshop/ref workshop/K12 workshop/O104 workshop/alignment workshop/variant_calling && cd workshop/ref
+```
+```
 # the start of the genome, which is circular but must be represented linearly in FASTA
-$ curl -s http://hypervolu.me/%7Eerik/genomes/E.coli_K12_MG1655.fa | head
+curl -s http://hypervolu.me/%7Eerik/genomes/E.coli_K12_MG1655.fa | head
 # >NC_000913.3 Escherichia coli str. K-12 substr. MG1655, complete genome
 # AGCTTTTCATTCTGACTGCAACGGGCAATATGTCTCTGTGTGGATTAAAAAAAGAGTGTCTGATAGCAGC
 # TTCTGAACTGGTTACCTGCCGTGAGTAAATTAAAATTTTATTGACTTAGGTCACTAAATACTTTAACCAA
@@ -61,26 +63,26 @@ $ curl -s http://hypervolu.me/%7Eerik/genomes/E.coli_K12_MG1655.fa | head
 ### 2.2 E. Coli K12 Illumina 2x300bp MiSeq sequencing results
 For testing alignment, let's get some data from a [recently-submitted sequencing run on a K12 strain from the University of Exeter](http://www.ncbi.nlm.nih.gov/sra/?term=SRR1770413). We can use the sratoolkit to directly pull the sequence data (in paired FASTQ format) from the archive:
 ```
-$ cd ../K12 
-$ fastq-dump --split-files SRR1770413
+cd ../K12 && \ 
+fastq-dump --split-files SRR1770413
 ```
 `fastq-dump` is in the SRA toolkit. It allows directly downloading data from a particular sequencing run ID. SRA stores data in a particular compressed format (SRA!) that isn't directly compatible with any downstream tools, so it's necessary to put things into FASTQ for further processing. The `--split-files` part of the command ensures we get two files, one for the first and second mate in each pair. We'll use them in this format when aligning.
 ### 2.3 E. Coli O104:H4 HiSeq 2000 2x100bp
 As a point of comparison, let's also pick up a [sequencing data set from a different E. Coli strain](http://www.ncbi.nlm.nih.gov/sra/SRX095630%5Baccn%5D). This one is [famous for its role in foodborne illness](https://en.wikipedia.org/wiki/Escherichia_coli_O104%3AH4#Infection) and is of medical interest.
 ```
-$ cd ../O104
-$ fastq-dump --split-files SRR341549
+cd ../O104 && \
+fastq-dump --split-files SRR341549
 ```
 ### 2.4 Setting up our reference indexes
 #### FASTA file index
 First, we'll want to allow tools (such as our variant caller) to quickly access certain regions in the reference. This is done using the samtools `.fai` FASTA index format, which records the lengths of the various sequences in the reference and their offsets from the beginning of the file.
 ```
-$ cd ../ref
-$ samtools faidx E.coli_K12_MG1655.fa
+cd ../ref && \
+samtools faidx E.coli_K12_MG1655.fa
 ```
 Now it's possible to quickly obtain any part of the E. Coli K12 reference sequence. For instance, we can get the 200bp from position 1000000 to 1000200. We'll use a special format to describe the target region `[chr]:[start]-[end]`.
 ```
-$ samtools faidx E.coli_K12_MG1655.fa NC_000913.3:1000000-1000200
+samtools faidx E.coli_K12_MG1655.fa NC_000913.3:1000000-1000200
 ```
 We get back a small FASTA-format file describing the region:
 ```
@@ -93,7 +95,7 @@ TCTATTCCACGTCGTCGAGCG
 #### BWA's FM-index
 BWA uses the [FM-index](https://en.wikipedia.org/wiki/FM-index), which a compressed full-text substring index based around the [Burrows-Wheeler transform](https://en.wikipedia.org/wiki/Burrows%E2%80%93Wheeler_transform). To use this index, we first need to build it:
 ```
-$ bwa index E.coli_K12_MG1655.fa
+bwa index E.coli_K12_MG1655.fa
 ```
 You should see `bwa` generate some information about the build process:
 ```
@@ -109,7 +111,9 @@ You should see `bwa` generate some information about the build process:
 ```
 And, you should notice a new index file which has been made using the FASTA file name as prefix:
 ```
-$ ls -rt1 E.coli_K12_MG1655.fa*
+ls -rt1 E.coli_K12_MG1655.fa*
+```
+```
 # -->
 E.coli_K12_MG1655.fa
 E.coli_K12_MG1655.fa.fai
@@ -132,13 +136,13 @@ We could the steps one-by-one, generating an intermediate file for each step. Ho
 You can now run the alignment using a piped approach. Replace `$threads` with the number of CPUs you would like to use for alignment. Not all steps in `bwa` run in parallel, but the alignment, which is the most time-consuming step, does. You'll need to set this given the available resources you have. 
 ```
 #To check your cpus you can use this command:
-$ htop
-$ cd ../alignment
-$ bwa mem -t $threads -R '@RG\tID:K12\tSM:K12' \
+htop
+cd ../alignment 
+bwa mem -t $threads -R '@RG\tID:K12\tSM:K12' \
     ../ref/E.coli_K12_MG1655.fa ../K12/SRR1770413_1.fastq.gz ../K12/SRR1770413_2.fastq.gz \
     | samtools view -b - >SRR1770413.raw.bam
-$ sambamba sort SRR1770413.raw.bam
-$ sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.ba
+sambamba sort SRR1770413.raw.bam
+sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.ba
 ```
 Breaking it down by line:
 
@@ -151,15 +155,15 @@ Breaking it down by line:
 Now, run the same alignment process for the O104:H4 strain's data. Make sure to specify a different sample name via the `-R '@RG...` flag incantation to specify the identity of the data in the BAM file header and in the alignment records themselves:
 
 ```
-$ bwa mem -t $threads -R '@RG\tID:O104_H4\tSM:O104_H4' \
+bwa mem -t $threads -R '@RG\tID:O104_H4\tSM:O104_H4' \
     ../ref/E.coli_K12_MG1655.fa ../O104/SRR341549_1.fastq.gz  ../O104/SRR341549_2.fastq.gz \
     | samtools view -b - >SRR341549.raw.bam
-$ sambamba sort SRR341549.raw.bam
-$ sambamba markdup SRR341549.raw.sorted.bam SRR341549.bam
+sambamba sort SRR341549.raw.bam
+sambamba markdup SRR341549.raw.sorted.bam SRR341549.bam
 ```
 As a standard post-processing step, it's helpful to add a BAM index to the files. This let's us jump around in them quickly using BAM compatible tools that can read the index. sambamba does this for us by default, but if it hadn't or we had used a different process to generate the BAM files, we could use samtools to achieve exactly the same index.
 ```
-$ samtools index SRR1770413.bam && samtools index SRR341549.bam
+samtools index SRR1770413.bam && samtools index SRR341549.bam
 ```
 ## Part [3]: Variant Calling 
 Now that we have our alignments sorted, we can quickly determine variation against the reference by scanning through them using a variant caller. There are many options, including [samtools mpileup](http://samtools.sourceforge.net/samtools.shtml), [platypus](https://www.well.ox.ac.uk/research/research-groups/lunter-group/lunter-group/platypus-documentation), and the [GATK](https://gatk.broadinstitute.org/hc/en-us).
@@ -173,8 +177,8 @@ However, in this context, we only have two samples and the best reason to call t
 
 We would run a joint call by dropping in both BAMs on the command line to freebayes:
 ```
-$ cd ../variant_calling
-$ freebayes -f ../ref/E.coli_K12_MG1655.fa --ploidy 1 ../K12/SRR1770413.bam ../O104/SRR341549.bam >e_colis.vcf
+cd ../variant_calling && \
+freebayes -f ../ref/E.coli_K12_MG1655.fa --ploidy 1 ../K12/SRR1770413.bam ../O104/SRR341549.bam >e_colis.vcf
 ```
 As long as we've added the read group (@RG) flags when we aligned (or did so after with [bamaddrg](https://github.com/ekg/bamaddrg), that's all we need to do to run the joint calling. (NB: due to the amount of data in SRR341549, this should take about 20 minutes.)
 
@@ -182,15 +186,15 @@ As long as we've added the read group (@RG) flags when we aligned (or did so aft
 We can speed up random access to VCF files by compressing them with `bgzip`, in the [htslib](https://github.com/samtools/htslib) package. `bgzip` is a "block-based GZIP", which compresses files in chunks of lines. This chunking let's us quickly seek to a particular part of the file, and support indexes to do so. The default one to use is tabix. It generates indexes of the file with the default name `.tbi`.
 
 ```
-$ bgzip e_colis.vcf  # makes SRR1770413.vcf.gz
-$ tabix -p vcf e_colis.vcf.gz
+bgzip e_colis.vcf  # makes SRR1770413.vcf.gz
+tabix -p vcf e_colis.vcf.gz
 ```
 ### 3.3 Take a peek with `vt`
 [vt](https://github.com/atks/vt) is a toolkit for variant annotation and manipulation. In addition to other methods, it provides a nice method, `vt peek`, to determine basic statistics about the variants in a VCF file.
 
 We can get a summary like so:
 ```
-$ vt peek e_colis.vcf.gz
+vt peek e_colis.vcf.gz
 ```
 
 ### 3.4 Filtering using the transition/transversion ratio (ts/tv) as a rough guide
@@ -202,9 +206,9 @@ As we don't have validation information for our sample, we can use this as a sim
 
 ```
 # a basic filter to remove low-quality sites
-$ vcffilter -f 'QUAL > 10' e_colis.vcf.gz | vt peek -
+vcffilter -f 'QUAL > 10' e_colis.vcf.gz | vt peek -
 
 # scaling quality by depth is like requiring that the additional log-unit contribution
 # of each read is at least N
-$ vcffilter -f 'QUAL / AO > 10' e_colis.vcf.gz | vt peek -
+vcffilter -f 'QUAL / AO > 10' e_colis.vcf.gz | vt peek -
 ```
