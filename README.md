@@ -173,7 +173,7 @@ However, in this context, we only have two samples and the best reason to call t
 
 We would run a joint call by dropping in both BAMs on the command line to freebayes:
 ```
-cd ../variant_calling
+$ cd ../variant_calling
 $ freebayes -f ../ref/E.coli_K12_MG1655.fa --ploidy 1 ../K12/SRR1770413.bam ../O104/SRR341549.bam >e_colis.vcf
 ```
 As long as we've added the read group (@RG) flags when we aligned (or did so after with [bamaddrg](https://github.com/ekg/bamaddrg), that's all we need to do to run the joint calling. (NB: due to the amount of data in SRR341549, this should take about 20 minutes.)
@@ -202,9 +202,9 @@ As we don't have validation information for our sample, we can use this as a sim
 
 ```
 # a basic filter to remove low-quality sites
-vcffilter -f 'QUAL > 10' e_colis.vcf.gz | vt peek -
+$ vcffilter -f 'QUAL > 10' e_colis.vcf.gz | vt peek -
 
 # scaling quality by depth is like requiring that the additional log-unit contribution
 # of each read is at least N
-vcffilter -f 'QUAL / AO > 10' e_colis.vcf.gz | vt peek -
+$ vcffilter -f 'QUAL / AO > 10' e_colis.vcf.gz | vt peek -
 ```
