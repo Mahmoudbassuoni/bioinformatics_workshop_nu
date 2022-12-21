@@ -166,5 +166,45 @@ Now that we have our alignments sorted, we can quickly determine variation again
 
 For this tutorial, we'll keep things simple and use [freebayes](https://github.com/freebayes/freebayes). It has a number of advantages in this context (bacterial genomes), such as long-term support for haploid (and polyploid) genomes. However, the best reason to use it is that it's very easy to set up and run, and it produces a very well-annotated VCF output that is suitable for immediate downstream filtering.
 
-### Variant calls with freebayes
+### 3.1 Joint calling with `freebayes`
+We can put the samples together if we want to find differences between them. Calling them jointly can help if we have a population of samples to use to help remove calls from paralogous regions. The Bayesian model in freebayes combines the data likelihoods from sequencing data with an estimate of the probability of observing a given set of genotypes under assumptions of neutral evolution and a [panmictic](https://en.wikipedia.org/wiki/Panmixia) population. For instance, [it would be very unusual to find a locus at which all the samples are heterozygous](https://en.wikipedia.org/wiki/Hardy%E2%80%93Weinberg_principle). It also helps improve statistics about observational biases (like strand bias, read placement bias, and allele balance in heterozygotes) by bringing more data into the algorithm.
 
+However, in this context, we only have two samples and the best reason to call them jointly is to make sure we have a genotype for each one at every locus where a non-reference allele passes the caller's thresholds in either sample.
+
+We would run a joint call by dropping in both BAMs on the command line to freebayes:
+```
+cd ../variant_calling
+$ freebayes -f ../ref/E.coli_K12_MG1655.fa --ploidy 1 ../K12/SRR1770413.bam ../O104/SRR341549.bam >e_colis.vcf
+```
+As long as we've added the read group (@RG) flags when we aligned (or did so after with [bamaddrg](https://github.com/ekg/bamaddrg), that's all we need to do to run the joint calling. (NB: due to the amount of data in SRR341549, this should take about 20 minutes.)
+
+### 3.2 `bgzip` and `tabix`
+We can speed up random access to VCF files by compressing them with `bgzip`, in the [htslib](https://github.com/samtools/htslib) package. `bgzip` is a "block-based GZIP", which compresses files in chunks of lines. This chunking let's us quickly seek to a particular part of the file, and support indexes to do so. The default one to use is tabix. It generates indexes of the file with the default name `.tbi`.
+
+```
+$ bgzip e_colis.vcf  # makes SRR1770413.vcf.gz
+$ tabix -p vcf e_colis.vcf.gz
+```
+### 3.3 Take a peek with `vt`
+[vt](https://github.com/atks/vt) is a toolkit for variant annotation and manipulation. In addition to other methods, it provides a nice method, `vt peek`, to determine basic statistics about the variants in a VCF file.
+
+We can get a summary like so:
+```
+$ vt peek e_colis.vcf.gz
+```
+
+### 3.4 Filtering using the transition/transversion ratio (ts/tv) as a rough guide
+`vt` produces a nice summary with the transition/transversion ratio. Transitions are mutations that switch between DNA bases that have the same base structure (either a [purine](https://en.wikipedia.org/wiki/Purine) or [pyrimidine](https://en.wikipedia.org/wiki/Pyrimidine) ring).
+
+In most biological systems, [transitions (A<->G, C<->T) are far more likely than transversions](https://upload.wikimedia.org/wikipedia/commons/3/35/Transitions-transversions-v3.png), so we expect the ts/tv ratio to be pretty far from 0.5, which is what it would be if all mutations between DNA bases were random. In practice, we tend to see something that's at least 1 in most organisms, and ~2 in some, such as human. In some biological contexts, such as in mitochondria, we see an even higher ratio, perhaps as much as 20.
+
+As we don't have validation information for our sample, we can use this as a simple guide for our first filtering attempts. An easy way is to try different filterings using `vcffilter` and check the ratio of the resulting set with `vt peek`:
+
+```
+# a basic filter to remove low-quality sites
+vcffilter -f 'QUAL > 10' e_colis.vcf.gz | vt peek -
+
+# scaling quality by depth is like requiring that the additional log-unit contribution
+# of each read is at least N
+vcffilter -f 'QUAL / AO > 10' e_colis.vcf.gz | vt peek -
+```
