@@ -53,6 +53,7 @@ We'll get some test data to play with. First, [the E. Coli K12 reference](http:/
 mkdir workshop workshop/ref workshop/K12 workshop/O104 workshop/alignment workshop/variant_calling && cd workshop/ref
 ```
 ```
+curl -s http://hypervolu.me/%7Eerik/genomes/E.coli_K12_MG1655.fa > E.coli_K12_MG1655.fa
 # the start of the genome, which is circular but must be represented linearly in FASTA
 curl -s http://hypervolu.me/%7Eerik/genomes/E.coli_K12_MG1655.fa | head
 # >NC_000913.3 Escherichia coli str. K-12 substr. MG1655, complete genome
