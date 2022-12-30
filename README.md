@@ -145,7 +145,7 @@ bwa mem -t $threads -R '@RG\tID:K12\tSM:K12' \
     ../ref/E.coli_K12_MG1655.fa ../K12/SRR1770413_1.fastq.gz ../K12/SRR1770413_2.fastq.gz \
     | samtools view -b - >SRR1770413.raw.bam
 sambamba sort SRR1770413.raw.bam
-sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.ba
+sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.bam
 ```
 Breaking it down by line:
 
