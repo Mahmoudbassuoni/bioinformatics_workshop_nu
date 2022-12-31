@@ -67,14 +67,14 @@ curl -s http://hypervolu.me/%7Eerik/genomes/E.coli_K12_MG1655.fa | head
 For testing alignment, let's get some data from a [recently-submitted sequencing run on a K12 strain from the University of Exeter](http://www.ncbi.nlm.nih.gov/sra/?term=SRR1770413). We can use the sratoolkit to directly pull the sequence data (in paired FASTQ format) from the archive:
 ```
 cd ../K12 && \ 
-fastq-dump --split-files SRR1770413
+fastq-dump --split-files ./SRR1770413
 ```
 `fastq-dump` is in the SRA toolkit. It allows directly downloading data from a particular sequencing run ID. SRA stores data in a particular compressed format (SRA!) that isn't directly compatible with any downstream tools, so it's necessary to put things into FASTQ for further processing. The `--split-files` part of the command ensures we get two files, one for the first and second mate in each pair. We'll use them in this format when aligning.
 ### 2.3 E. Coli O104:H4 HiSeq 2000 2x100bp
 As a point of comparison, let's also pick up a [sequencing data set from a different E. Coli strain](http://www.ncbi.nlm.nih.gov/sra/SRX095630%5Baccn%5D). This one is [famous for its role in foodborne illness](https://en.wikipedia.org/wiki/Escherichia_coli_O104%3AH4#Infection) and is of medical interest.
 ```
 cd ../O104 && \
-fastq-dump --split-files SRR341549
+fastq-dump --split-files ./SRR341549
 ```
 ### 2.4 Setting up our reference indexes
 #### FASTA file index
