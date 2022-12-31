@@ -140,9 +140,11 @@ You can now run the alignment using a piped approach. Replace `$threads` with th
 ```
 #To check your cpus you can use this command:
 htop
+```
+```
 cd ../alignment 
 bwa mem -t $threads -R '@RG\tID:K12\tSM:K12' \
-    ../ref/E.coli_K12_MG1655.fa ../K12/SRR1770413_1.fastq.gz ../K12/SRR1770413_2.fastq.gz \
+    ../ref/E.coli_K12_MG1655.fa ../K12/SRR1770413_1.fastq ../K12/SRR1770413_2.fastq \
     | samtools view -b - >SRR1770413.raw.bam
 sambamba sort SRR1770413.raw.bam
 sambamba markdup SRR1770413.raw.sorted.bam SRR1770413.bam
@@ -159,7 +161,7 @@ Now, run the same alignment process for the O104:H4 strain's data. Make sure to 
 
 ```
 bwa mem -t $threads -R '@RG\tID:O104_H4\tSM:O104_H4' \
-    ../ref/E.coli_K12_MG1655.fa ../O104/SRR341549_1.fastq.gz  ../O104/SRR341549_2.fastq.gz \
+    ../ref/E.coli_K12_MG1655.fa ../O104/SRR341549_1.fastq  ../O104/SRR341549_2.fastq \
     | samtools view -b - >SRR341549.raw.bam
 sambamba sort SRR341549.raw.bam
 sambamba markdup SRR341549.raw.sorted.bam SRR341549.bam
